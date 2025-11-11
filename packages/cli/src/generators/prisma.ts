@@ -180,10 +180,10 @@ export const generatePrismaSchema: SchemaGenerator = async ({
 					) {
 						fieldBuilder.attribute(`default(${attr.defaultValue})`);
 					} else if (typeof attr.defaultValue === "function") {
-							// we are intentionally not adding the default value here
-							// this is because if the defaultValue is a function, it could have
-							// custom logic within that function that might not work in prisma's context.
-						}
+						// we are intentionally not adding the default value here
+						// this is because if the defaultValue is a function, it could have
+						// custom logic within that function that might not work in prisma's context.
+					}
 				}
 				// This is a special handling for updatedAt fields
 				if (field === "updatedAt" && attr.onUpdate) {
@@ -222,22 +222,27 @@ export const generatePrismaSchema: SchemaGenerator = async ({
 					!attr.references &&
 					provider === "mysql" &&
 					attr.type === "string" &&
-                    attr.defaultValue!==undefined &&
 					typeof attr.defaultValue !== "function"
 				) {
-					
-					
-					attr.defaultValue && JSON.stringify(attr.defaultValue).length > 255
-						? builder
-								.model(modelName)
-								.field(fieldName)
-								.attribute(`default(dbgenerated("('${attr.defaultValue}')"))`)
-								.attribute("db.Text")
-						: fieldBuilder.attribute(
-								`default(${JSON.stringify(attr.defaultValue)})`,
-							);
-					if (!attr.defaultValue)
-						builder.model(modelName).field(fieldName).attribute("db.Text");
+					if (
+						attr.defaultValue !== undefined &&
+						attr.defaultValue &&
+						JSON.stringify(attr.defaultValue).length > 255
+					)
+						builder
+							.model(modelName)
+							.field(fieldName)
+							.attribute(`default(dbgenerated("('${attr.defaultValue}')"))`)
+							.attribute("db.Text");
+					else if (
+						attr.defaultValue !== undefined &&
+						attr.defaultValue &&
+						JSON.stringify(attr.defaultValue).length < 255
+					)
+						fieldBuilder.attribute(
+							`default(${JSON.stringify(attr.defaultValue)})`,
+						);
+					else builder.model(modelName).field(fieldName).attribute("db.Text");
 				}
 			}
 
