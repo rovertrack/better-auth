@@ -2,6 +2,7 @@ import { APIError, getSessionFromCtx } from "../../api";
 import {
 	createAuthEndpoint,
 	createAuthMiddleware,
+	type AuthMiddleware,
 } from "@better-auth/core/middleware";
 import type { BetterAuthPlugin } from "@better-auth/core";
 import type { InferOptionSchema, Session, User } from "../../types";
@@ -248,7 +249,7 @@ export const anonymous = (options?: AnonymousOptions) => {
 						if (!options?.disableDeleteAnonymousUser) {
 							await ctx.context.internalAdapter.deleteUser(session.user.id);
 						}
-					}),
+					}) as AuthMiddleware,
 				},
 			],
 		},
